@@ -488,12 +488,13 @@ function updateMetricHistory(snapshot) {
 
     if (FIVE_MINUTE_RESET_METRICS.has(key)) {
       const currentBase = state.fiveMinuteMetricBases[key];
-      if (!currentBase || currentBase.bucket !== fiveMinuteBucket || !Number.isFinite(currentBase.value)) {
+      const isNewBucket = !currentBase || currentBase.bucket !== fiveMinuteBucket || !Number.isFinite(currentBase.value);
+      if (isNewBucket) {
         state.fiveMinuteMetricBases[key] = {
           bucket: fiveMinuteBucket,
           value: numericValue
         };
-
+        state.lastMetricValues[key] = numericValue;
         series.set(minuteBucket, {
           timestamp: minuteBucket,
           baseValue: numericValue,
@@ -501,11 +502,14 @@ function updateMetricHistory(snapshot) {
           value: 0
         });
       } else {
+        const previousValue = state.lastMetricValues[key];
+        state.lastMetricValues[key] = numericValue;
+        const delta = Number.isFinite(previousValue) ? numericValue - previousValue : 0;
         series.set(minuteBucket, {
           timestamp: minuteBucket,
           baseValue: currentBase.value,
           currentValue: numericValue,
-          value: numericValue - currentBase.value
+          value: delta
         });
       }
     } else if (MINUTE_CHANGE_SUM_METRICS.has(key)) {
@@ -671,34 +675,26 @@ function renderCurrentMetrics() {
       key: "sf3",
       title: "SF3",
       value: snapshot?.values?.sf3 || "--",
-      detail: snapshot
-        ? `Source: ${snapshot.sources?.sf3 || "--"} | 5m line: ${describeThresholdState(sf3Status, snapshot.thresholds.sf3)} | Chart: 5m reset delta`
-        : "Waiting for live tile value."
+      detail: ""
     },
     {
       key: "nof",
       title: "NOFA",
       value: snapshot?.values?.nof || "--",
-      detail: snapshot
-        ? `Source: ${snapshot.sources?.nof || "--"} | NOF line: ${describeThresholdState(nofStatus, snapshot.thresholds.nof)} | Chart: minute change sum`
-        : "Waiting for metrics modal value."
+      detail: ""
     },
     {
       key: "momoFlow",
       title: "MomoFlow",
       value: snapshot?.values?.momoFlow || "--",
-      detail: snapshot
-        ? `Source: ${snapshot.sources?.momoFlow || "--"} | MF line: ${describeThresholdState(momoStatus, snapshot.thresholds.mf)} | Chart: 5m reset delta`
-        : "Waiting for metrics modal value."
+      detail: ""
     },
     {
       key: "sf3",
       title: "Live Price",
       isPriceCard: true,
       value: snapshot?.values?.price || formatPrice(snapshot?.numericValues?.price),
-      detail: snapshot
-        ? `Source: ${snapshot.sources?.price || "--"} | Chart: cents from first tick each minute`
-        : "Waiting for live price banner."
+      detail: ""
     }
   ];
 

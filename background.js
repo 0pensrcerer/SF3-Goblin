@@ -277,12 +277,13 @@ function buildNextMonitorHistory(history, snapshot) {
     const series = metricMaps[key];
     if (FIVE_MINUTE_RESET_METRICS.has(key)) {
       const currentBase = nextFiveMinuteMetricBases[key];
-      if (!currentBase || currentBase.bucket !== fiveMinuteBucket || !Number.isFinite(currentBase.value)) {
+      const isNewBucket = !currentBase || currentBase.bucket !== fiveMinuteBucket || !Number.isFinite(currentBase.value);
+      if (isNewBucket) {
         nextFiveMinuteMetricBases[key] = {
           bucket: fiveMinuteBucket,
           value: numericValue
         };
-
+        nextLastMetricValues[key] = numericValue;
         series.set(minuteBucket, {
           timestamp: minuteBucket,
           baseValue: numericValue,
@@ -290,11 +291,14 @@ function buildNextMonitorHistory(history, snapshot) {
           value: 0
         });
       } else {
+        const previousValue = nextLastMetricValues[key];
+        nextLastMetricValues[key] = numericValue;
+        const delta = Number.isFinite(previousValue) ? numericValue - previousValue : 0;
         series.set(minuteBucket, {
           timestamp: minuteBucket,
           baseValue: currentBase.value,
           currentValue: numericValue,
-          value: numericValue - currentBase.value
+          value: delta
         });
       }
     } else if (MINUTE_CHANGE_SUM_METRICS.has(key)) {
