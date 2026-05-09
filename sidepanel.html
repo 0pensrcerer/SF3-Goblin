@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SF3 Live Monitor</title>
+    <title>SF3 Goblin</title>
     <style>
       :root {
         color-scheme: dark;
@@ -14,7 +14,7 @@
 
       body {
         margin: 0;
-        padding: 16px;
+        padding: 10px;
         background:
           radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 28%),
           radial-gradient(circle at top left, rgba(232, 152, 48, 0.12), transparent 22%),
@@ -23,7 +23,7 @@
 
       .shell {
         display: grid;
-        gap: 14px;
+        gap: 8px;
       }
 
       .panel {
@@ -31,26 +31,26 @@
         border-radius: 14px;
         background: rgba(14, 22, 35, 0.92);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
-        padding: 14px;
+        padding: 10px;
       }
 
       .header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 12px;
+        gap: 8px;
       }
 
       .brand-lockup {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 10px;
       }
 
       .brand-logo {
-        width: 68px;
-        height: 68px;
-        border-radius: 16px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         border: 1px solid rgba(154, 176, 212, 0.18);
         box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
         object-fit: cover;
@@ -61,8 +61,81 @@
         min-width: 0;
       }
 
+      .brand-meta {
+        margin-top: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
+        color: #8ea3c5;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .brand-meta strong {
+        color: #dce8ff;
+        font-size: 11px;
+      }
+
+      .dp-circle {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        font-size: 0;
+        transition: background-color 0.2s ease;
+      }
+
+      .dp-circle.dp-below {
+        background-color: #4ade80;
+      }
+
+      .dp-circle.dp-above {
+        background-color: #f87171;
+      }
+
+      .indicator-tile.darkpool-tile {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px;
+      }
+
+      .darkpool-tile .tile-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #dce8ff;
+        margin: 0;
+      }
+
+      .darkpool-tile .tile-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #8ea3c5;
+      }
+
+      .darkpool-tile .tile-status {
+        font-size: 9px;
+        color: #6b7d95;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .darkpool-tile .crossed-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #6b7d95;
+      }
+
+      .darkpool-tile .crossed-indicator.crossed {
+        background-color: #fbbf24;
+      }
+
       .title {
-        font-size: 20px;
+        font-size: 17px;
         font-weight: 700;
         margin: 0;
       }
@@ -76,16 +149,16 @@
 
       .header-actions {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         align-items: center;
         flex-wrap: wrap;
       }
 
       button {
         border: 0;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 12px;
+        border-radius: 9px;
+        padding: 8px 10px;
+        font-size: 11px;
         font-weight: 700;
         cursor: pointer;
       }
@@ -183,7 +256,7 @@
 
       .chart-stack {
         display: grid;
-        gap: 14px;
+        gap: 10px;
       }
 
       .chart-panel {
@@ -195,7 +268,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 14px 0;
+        padding: 10px 10px 0;
       }
 
       .legend {
@@ -220,12 +293,59 @@
       }
 
       .chart-frame {
-        padding: 10px 8px 12px;
+        padding: 6px 6px 8px;
+      }
+
+      .chart-frame.dark-pool-frame {
+        display: flex;
+        padding: 6px;
+        gap: 6px;
+      }
+
+      .dark-pool-chart-container {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .dark-pool-chart-container .chart-svg {
+        width: 100%;
+        height: 160px;
+      }
+
+      .dark-pool-indicator-container {
+        flex: 0 0 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+      }
+
+      .dark-pool-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .dark-pool-circle.dp-below {
+        background-color: #4ade80;
+      }
+
+      .dark-pool-circle.dp-above {
+        background-color: #f87171;
+      }
+
+      .dark-pool-circle.dp-crossed {
+        background-color: #9ca3af;
       }
 
       .chart-svg {
         width: 100%;
-        height: 190px;
+        height: 160px;
         display: block;
       }
 
@@ -245,17 +365,17 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 12px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
 
       .alarm-display {
-        min-height: 92px;
+        min-height: 56px;
       }
 
       .alarm-empty {
         border: 1px dashed rgba(154, 176, 212, 0.2);
         border-radius: 12px;
-        padding: 14px;
+        padding: 10px;
         color: #b4c4df;
         font-size: 13px;
         line-height: 1.55;
@@ -446,6 +566,20 @@
         font-size: 14px;
       }
 
+      .form-group select {
+        background-color: #172234;
+      }
+
+      .form-group select option {
+        background-color: #0f1827;
+        color: #e8efff;
+      }
+
+      .form-group select option:checked {
+        background-color: #2f6fed;
+        color: #ffffff;
+      }
+
       .form-group input:focus,
       .form-group select:focus {
         outline: none;
@@ -476,10 +610,43 @@
         gap: 8px;
       }
 
+      .audio-settings-block {
+        border: 1px solid rgba(154, 176, 212, 0.14);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .audio-settings-title {
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: #9ec5ff;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .audio-file-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .audio-source-label {
+        margin: 4px 0 8px;
+        font-size: 12px;
+        color: #b4c4df;
+      }
+
+      .audio-source-label strong {
+        color: #e8efff;
+      }
+
       .alerts-list {
         list-style: none;
         padding: 0;
-        margin: 12px 0 0;
+        margin: 8px 0 0;
         display: grid;
         gap: 8px;
       }
@@ -488,7 +655,7 @@
         border-radius: 10px;
         border: 1px solid rgba(154, 176, 212, 0.1);
         background: rgba(255, 255, 255, 0.03);
-        padding: 10px 12px;
+        padding: 8px 10px;
       }
 
       .alert-time {
@@ -518,7 +685,7 @@
 
       @media (max-width: 720px) {
         body {
-          padding: 12px;
+          padding: 8px;
         }
 
         .header {
@@ -545,7 +712,127 @@
         .alarm-detail-grid {
           grid-template-columns: 1fr;
         }
+
+        .indicator-tile-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
+
+      /* ── Indicator Tiles ── */
+      .indicator-tile-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+      }
+
+      .indicator-tile {
+        border-radius: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1.5px solid rgba(154, 176, 212, 0.12);
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        user-select: none;
+        min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .indicator-tile:hover {
+        border-color: rgba(59, 130, 246, 0.42);
+        background: rgba(59, 130, 246, 0.07);
+      }
+
+      .indicator-tile.selected {
+        border-color: rgba(59, 130, 246, 0.72);
+        background: rgba(59, 130, 246, 0.12);
+      }
+
+      .tile-label {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8ea3c5;
+        margin: 0;
+      }
+
+      .tile-caption {
+        margin-top: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #b4c4df;
+      }
+
+      .indicator-tile.selected .tile-caption {
+        color: #dce8ff;
+      }
+
+      .collapsible-panel {
+        overflow: hidden;
+      }
+
+      .collapsible-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+      }
+
+      .collapsible-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .collapsible-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #dce8ff;
+      }
+
+      .collapsible-hint {
+        font-size: 11px;
+        font-weight: 700;
+        color: #8ea3c5;
+      }
+
+      .collapsible-chevron {
+        display: inline-block;
+        margin-left: 8px;
+        transition: transform 0.2s ease;
+      }
+
+      .collapsible-panel[open] .collapsible-chevron {
+        transform: rotate(180deg);
+      }
+
+      .collapsible-content {
+        margin-top: 8px;
+      }
+
+      /* ── Dynamic Chart Cards ── */
+      #charts-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chart-card-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #8ea3c5;
+        font-size: 20px;
+        line-height: 1;
+        padding: 0 4px;
+        border-radius: 6px;
+        transition: color 0.12s;
+      }
+
+      .chart-card-close:hover { color: #dce8ff; }
     </style>
   </head>
   <body>
@@ -555,87 +842,41 @@
           <div class="brand-lockup">
             <img class="brand-logo" src="assets/eating-the-dip.png" alt="Eating the Dip logo" />
             <div class="brand-copy">
-              <h1 class="title">SF3 Live Monitor</h1>
-              <p class="subtitle">Tracks live SF3, NOFA, MomoFlow, and price from BigShort, with separate stacked charts, your custom logo, and a Wicky-style pop-out view.</p>
+              <h1 class="title">SF3 Goblin</h1>
             </div>
           </div>
           <div class="header-actions">
             <button class="secondary" id="popoutButton" type="button">Pop Out</button>
             <button class="primary" id="armAudioButton" type="button">Arm Audio</button>
+            <button class="secondary" id="hpAudioMuteButton" type="button">Audio Settings</button>
             <button class="secondary" id="clearSessionButton" type="button">Reset Session</button>
           </div>
         </div>
-        <div class="meta-row">
-          <span class="badge waiting" id="statusBadge">Waiting for BigShort data</span>
-          <span id="monitorTargetText">Pinned source: click the extension on the BigShort tab you want to monitor.</span>
-          <span id="lastUpdatedText">Last update: --</span>
+
+      </section>
+
+      <details class="panel collapsible-panel" id="chartMenuPanel" open>
+        <summary class="collapsible-summary">
+          <span class="collapsible-title">Chart Menu</span>
+          <span class="collapsible-hint">Choose charts <span class="collapsible-chevron">▾</span></span>
+        </summary>
+        <div class="collapsible-content">
+          <div class="indicator-tile-grid" id="indicatorTileGrid"></div>
         </div>
-      </section>
-
-      <section class="panel">
-        <div class="card-grid" id="currentMetricsGrid"></div>
-      </section>
-
-      <section class="panel">
-        <div class="rolling-grid" id="rollingMetricsGrid"></div>
-      </section>
+      </details>
 
       <section class="panel">
         <div class="alarm-panel-header">
           <div>
             <div class="title" style="font-size: 16px;">Custom Alarm</div>
-            <div class="subtitle">One active alarm, Wicky-style. It watches the live minute delta of NOFA, MomoFlow, SF3, or price and can trigger once per 5-minute window.</div>
+            
           </div>
           <button class="primary" id="createAlarmButton" type="button">Create Alarm</button>
         </div>
         <div class="alarm-display" id="alarmDisplay"></div>
       </section>
 
-      <div class="chart-stack">
-        <section class="panel chart-panel">
-          <div class="chart-header">
-            <div>
-              <h2 class="section-title">NOF / NOFA</h2>
-            </div>
-          </div>
-          <div class="chart-frame">
-            <svg class="chart-svg" id="nofChart" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
-          </div>
-        </section>
-
-        <section class="panel chart-panel">
-          <div class="chart-header">
-            <div>
-              <h2 class="section-title">MomoFlow</h2>
-            </div>
-          </div>
-          <div class="chart-frame">
-            <svg class="chart-svg" id="momoFlowChart" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
-          </div>
-        </section>
-
-        <section class="panel chart-panel">
-          <div class="chart-header">
-            <div>
-              <h2 class="section-title">SF3</h2>
-            </div>
-          </div>
-          <div class="chart-frame">
-            <svg class="chart-svg" id="sf3Chart" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
-          </div>
-        </section>
-
-        <section class="panel chart-panel">
-          <div class="chart-header">
-            <div>
-              <h2 class="section-title">Price</h2>
-            </div>
-          </div>
-          <div class="chart-frame">
-            <svg class="chart-svg" id="priceChart" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
-          </div>
-        </section>
-      </div>
+      <div id="charts-section" class="chart-stack"></div>
 
       <section class="panel">
         <div class="title" style="font-size: 16px;">Alerts</div>
@@ -676,6 +917,69 @@
           <div class="modal-actions">
             <button class="secondary" id="cancelAlarmButton" type="button">Cancel</button>
             <button class="primary" type="submit">Save Alarm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="hpAudioMuteModal" aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Audio Settings</h3>
+          <button class="modal-close" id="closeHpAudioMuteModalButton" type="button" aria-label="Close mute dialog">x</button>
+        </div>
+        <form id="hpAudioMuteForm">
+          <div class="audio-settings-block">
+            <p class="audio-settings-title">Mute Default HP Rules</p>
+            <div class="form-hint" style="margin-bottom:12px;">
+              Mutes automatic HP-vs-price song triggers by scope.
+            </div>
+            <label class="checkbox-row" for="muteHpAllCheckbox">
+              <input id="muteHpAllCheckbox" type="checkbox" />
+              Mute HP All rules
+            </label>
+            <label class="checkbox-row" for="muteHp7Checkbox">
+              <input id="muteHp7Checkbox" type="checkbox" />
+              Mute HP 7 rules
+            </label>
+            <label class="checkbox-row" for="muteHp0Checkbox">
+              <input id="muteHp0Checkbox" type="checkbox" />
+              Mute HP 0 rules
+            </label>
+          </div>
+
+          <div class="audio-settings-block">
+            <p class="audio-settings-title">Repeat Timing</p>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="hpAudioRepeatSecondsInput">Minimum seconds between song replays</label>
+              <input id="hpAudioRepeatSecondsInput" type="number" min="0" step="0.1" />
+              <div class="form-hint">Example: 2.0 means the same song can replay at most once every 2 seconds.</div>
+            </div>
+          </div>
+
+          <div class="audio-settings-block">
+            <p class="audio-settings-title">Terminal Red Song</p>
+            <p class="audio-source-label">Current: <strong id="redSongSourceText">Built-in</strong></p>
+            <div class="audio-file-row">
+              <input id="redSongFileInput" type="file" accept="audio/*" />
+              <button class="secondary" id="resetRedSongButton" type="button">Use Built-in</button>
+            </div>
+            <div class="form-hint" style="margin-top:8px;">Local files are available for this session after selection.</div>
+          </div>
+
+          <div class="audio-settings-block">
+            <p class="audio-settings-title">Pretium Avaritiae Song</p>
+            <p class="audio-source-label">Current: <strong id="greenSongSourceText">Built-in</strong></p>
+            <div class="audio-file-row">
+              <input id="greenSongFileInput" type="file" accept="audio/*" />
+              <button class="secondary" id="resetGreenSongButton" type="button">Use Built-in</button>
+            </div>
+            <div class="form-hint" style="margin-top:8px;">You can load any local audio file for the green condition.</div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="secondary" id="cancelHpAudioMuteButton" type="button">Cancel</button>
+            <button class="primary" type="submit">Save</button>
           </div>
         </form>
       </div>

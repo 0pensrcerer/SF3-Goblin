@@ -4,6 +4,19 @@ class AudioAlarmNotifier {
     this.isPlaying = false;
     this.timeoutId = null;
     this.intervalId = null;
+    this.trackAudio = null;
+    this.objectTrackUrls = {};
+    this.lastTrackName = "";
+    this.lastTrackPlayedAt = 0;
+    this.trackReplayCooldownMs = 800;
+    this.trackVolume = 0.86;
+    this.defaultTrackSources = {
+      terminalRed: "assets/The_Terminal_Red.mp3",
+      pretiumAvaritiae: "assets/Pretium_Avaritiae.mp3"
+    };
+    this.trackSources = {
+      ...this.defaultTrackSources
+    };
     this.volume = 0.28;
     this.highFrequency = 880;
     this.lowFrequency = 440;
@@ -46,12 +59,118 @@ class AudioAlarmNotifier {
     oscillator.stop(now + durationSeconds);
   }
 
+  resolveTrackUrl(trackName) {
+    const relativePath = this.trackSources[trackName];
+    if (!relativePath) {
+      return "";
+    }
+
+    if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+      return chrome.runtime.getURL(relativePath);
+    }
+
+    return relativePath;
+  }
+
+  setTrackReplayCooldownMs(milliseconds) {
+    const nextValue = Number(milliseconds);
+    if (!Number.isFinite(nextValue) || nextValue < 0) {
+      return;
+    }
+
+    this.trackReplayCooldownMs = nextValue;
+  }
+
+  setTrackSource(trackName, sourcePath, options = {}) {
+    if (!this.defaultTrackSources[trackName]) {
+      return;
+    }
+
+    const { objectUrl = false } = options;
+    const normalized = String(sourcePath || "").trim();
+    if (!normalized) {
+      this.resetTrackSource(trackName);
+      return;
+    }
+
+    if (this.objectTrackUrls[trackName]) {
+      URL.revokeObjectURL(this.objectTrackUrls[trackName]);
+      delete this.objectTrackUrls[trackName];
+    }
+
+    this.trackSources[trackName] = normalized;
+    if (objectUrl) {
+      this.objectTrackUrls[trackName] = normalized;
+    }
+  }
+
+  resetTrackSource(trackName) {
+    if (!this.defaultTrackSources[trackName]) {
+      return;
+    }
+
+    if (this.objectTrackUrls[trackName]) {
+      URL.revokeObjectURL(this.objectTrackUrls[trackName]);
+      delete this.objectTrackUrls[trackName];
+    }
+
+    this.trackSources[trackName] = this.defaultTrackSources[trackName];
+  }
+
+  stopTrack() {
+    if (!this.trackAudio) {
+      return;
+    }
+
+    this.trackAudio.pause();
+    this.trackAudio.currentTime = 0;
+    this.trackAudio = null;
+  }
+
+  async playTrack(trackName) {
+    const trackUrl = this.resolveTrackUrl(trackName);
+    if (!trackUrl) {
+      return;
+    }
+
+    await this.initAudioContext();
+    const now = Date.now();
+    if (this.lastTrackName === trackName && now - this.lastTrackPlayedAt < this.trackReplayCooldownMs) {
+      return;
+    }
+
+    this.stopAlarm();
+    this.stopTrack();
+
+    const audio = new Audio(trackUrl);
+    audio.preload = "auto";
+    audio.volume = this.trackVolume;
+    this.trackAudio = audio;
+    this.lastTrackName = trackName;
+    this.lastTrackPlayedAt = now;
+
+    try {
+      await audio.play();
+    } catch (error) {
+      console.warn("[SF3 Goblin] Failed to play track:", trackName, error);
+      this.trackAudio = null;
+      return;
+    }
+
+    audio.addEventListener("ended", () => {
+      if (this.trackAudio === audio) {
+        this.trackAudio = null;
+      }
+    }, { once: true });
+  }
+
   async playAlarm() {
     if (this.isPlaying) {
       return;
     }
 
     await this.initAudioContext();
+    this.stopTrack();
     this.isPlaying = true;
 
     let useHighTone = true;

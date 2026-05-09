@@ -1,6 +1,11 @@
 const SNAPSHOT_STORAGE_KEY = "sf3LiveMonitorSnapshot";
 const MONITOR_TARGET_STORAGE_KEY = "sf3LiveMonitorTarget";
 const MONITOR_HISTORY_STORAGE_KEY = "sf3LiveMonitorHistory";
+const HP_AUDIO_MUTE_STORAGE_KEY = "sf3LiveMonitorHpAudioMuteScopes";
+const HP_AUDIO_SETTINGS_STORAGE_KEY = "sf3LiveMonitorHpAudioSettings";
+const DEFAULT_HP_AUDIO_SETTINGS = {
+  repeatSeconds: 0.8
+};
 
 const SERIES_META = {
   sf3: {
@@ -23,6 +28,104 @@ const SERIES_META = {
     negativeColor: "#e5484d",
     cardClass: "metric-mf",
     emptyMessage: "Waiting for MomoFlow samples..."
+  },
+  gex: {
+    label: "GEX",
+    color: "#60a5fa",
+    negativeColor: "#f87171",
+    cardClass: "metric-gex",
+    emptyMessage: "Waiting for GEX samples from the metrics modal..."
+  },
+  callHpAll: {
+    label: "Call HP All",
+    color: "#34d399",
+    negativeColor: "#f87171",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Call HP All samples..."
+  },
+  putHpAll: {
+    label: "Put HP All",
+    color: "#fbbf24",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Put HP All samples..."
+  },
+  zeroHpAll: {
+    label: "Zero HP All",
+    color: "#a78bfa",
+    negativeColor: "#f472b6",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Zero HP All samples..."
+  },
+  gravityHpAll: {
+    label: "Gravity HP All",
+    color: "#f59e0b",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Gravity HP All samples..."
+  },
+  callHp7: {
+    label: "Call HP 7",
+    color: "#22c55e",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Call HP 7 samples..."
+  },
+  putHp7: {
+    label: "Put HP 7",
+    color: "#f97316",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Put HP 7 samples..."
+  },
+  zeroHp7: {
+    label: "Zero HP 7",
+    color: "#818cf8",
+    negativeColor: "#f472b6",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Zero HP 7 samples..."
+  },
+  gravityHp7: {
+    label: "Gravity HP 7",
+    color: "#eab308",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Gravity HP 7 samples..."
+  },
+  callHp0: {
+    label: "Call HP 0",
+    color: "#10b981",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Call HP 0 samples..."
+  },
+  putHp0: {
+    label: "Put HP 0",
+    color: "#f97316",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Put HP 0 samples..."
+  },
+  zeroHp0: {
+    label: "Zero HP 0",
+    color: "#818cf8",
+    negativeColor: "#f472b6",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Zero HP 0 samples..."
+  },
+  gravityHp0: {
+    label: "Gravity HP 0",
+    color: "#eab308",
+    negativeColor: "#ef4444",
+    cardClass: "metric-hp",
+    emptyMessage: "Waiting for Gravity HP 0 samples..."
+  },
+  darkPool: {
+    label: "Dark Pool",
+    color: "#8b5cf6",
+    negativeColor: "#d1d5db",
+    cardClass: "metric-dp",
+    emptyMessage: "Waiting for Dark Pool data..."
   }
 };
 
@@ -72,11 +175,69 @@ const HISTORICAL_SF3_THRESHOLDS = {
   }
 };
 
-const METRIC_CHART_ORDER = ["nof", "momoFlow", "sf3"];
+const TRACKED_METRIC_KEYS = [
+  "sf3",
+  "nof",
+  "momoFlow",
+  "gex",
+  "callHpAll",
+  "putHpAll",
+  "zeroHpAll",
+  "gravityHpAll",
+  "callHp7",
+  "putHp7",
+  "zeroHp7",
+  "gravityHp7",
+  "callHp0",
+  "putHp0",
+  "zeroHp0",
+  "gravityHp0"
+];
+const METRIC_CHART_ORDER = [...TRACKED_METRIC_KEYS];
 const MINUTE_CHANGE_SUM_METRICS = new Set(["nof"]);
-const FIVE_MINUTE_RESET_METRICS = new Set(["sf3", "momoFlow"]);
+const FIVE_MINUTE_RESET_METRICS = new Set([
+  "sf3",
+  "momoFlow",
+  "gex",
+  "callHpAll",
+  "putHpAll",
+  "zeroHpAll",
+  "gravityHpAll",
+  "callHp7",
+  "putHp7",
+  "zeroHp7",
+  "gravityHp7",
+  "callHp0",
+  "putHp0",
+  "zeroHp0",
+  "gravityHp0"
+]);
 const WICKY_METRIC_SCALE_STEP = 5_000_000;
 const WICKY_STYLE_SCALE_METRICS = new Set(["sf3", "momoFlow"]);
+const METRIC_SCALE_STEP_OVERRIDES = {
+  gex: 10
+};
+
+const DASHBOARD_METRICS = [
+  { key: "sf3", label: "SF3" },
+  { key: "nof", label: "NOF" },
+  { key: "momoFlow", label: "MomoFlow" },
+  { key: "gex", label: "GEX" },
+  { key: "callHpAll", label: "Call HP All" },
+  { key: "putHpAll", label: "Put HP All" },
+  { key: "zeroHpAll", label: "Zero HP All" },
+  { key: "gravityHpAll", label: "Gravity HP All" },
+  { key: "callHp7", label: "Call HP 7" },
+  { key: "putHp7", label: "Put HP 7" },
+  { key: "zeroHp7", label: "Zero HP 7" },
+  { key: "gravityHp7", label: "Gravity HP 7" },
+  { key: "callHp0", label: "Call HP 0" },
+  { key: "putHp0", label: "Put HP 0" },
+  { key: "zeroHp0", label: "Zero HP 0" },
+  { key: "gravityHp0", label: "Gravity HP 0" },
+  { key: "price", label: "Price" },
+  { key: "darkPool", label: "Dark Pool", isSpecial: true }
+];
 const CHART_DIMENSIONS = {
   width: 640,
   height: 190,
@@ -86,25 +247,29 @@ const MAX_ALERTS = 12;
 const MAX_MINUTE_HISTORY_MS = 60 * 60 * 1000;
 const MAX_FIVE_MINUTE_HISTORY_MS = 48 * 60 * 60 * 1000;
 
+const HP_ALARM_SCOPE_CONFIG = [
+  { id: "all", callKey: "callHpAll", putKey: "putHpAll" },
+  { id: "7", callKey: "callHp7", putKey: "putHp7" },
+  { id: "0", callKey: "callHp0", putKey: "putHp0" }
+];
+
+function buildMetricStateObject(valueFactory) {
+  return TRACKED_METRIC_KEYS.reduce((accumulator, key) => {
+    accumulator[key] = valueFactory(key);
+    return accumulator;
+  }, {});
+}
+
 const state = {
   snapshot: null,
   monitorTarget: null,
-  minuteSeries: {
-    sf3: new Map(),
-    nof: new Map(),
-    momoFlow: new Map()
-  },
-  lastMetricValues: {
-    sf3: null,
-    nof: null,
-    momoFlow: null
-  },
-  fiveMinuteMetricBases: {
-    sf3: null,
-    momoFlow: null
-  },
+  selectedCharts: new Set(),
+  minuteSeries: buildMetricStateObject(() => new Map()),
+  lastMetricValues: buildMetricStateObject(() => null),
+  fiveMinuteMetricBases: buildMetricStateObject((key) => (FIVE_MINUTE_RESET_METRICS.has(key) ? null : undefined)),
   priceMinuteChanges: new Map(),
   sf3FiveMinuteBuckets: new Map(),
+  darkPoolMinuteSeries: new Map(),
   alerts: [],
   alertState: {
     sf3FiveMinute: "inside",
@@ -113,7 +278,19 @@ const state = {
     hourlyBand: null,
     dailyBand: null
   },
-  audioArmed: false
+  hpAudioMuteScopes: new Set(),
+  hpAudioRepeatSeconds: DEFAULT_HP_AUDIO_SETTINGS.repeatSeconds,
+  hpTrackSourceLabels: {
+    terminalRed: "Built-in",
+    pretiumAvaritiae: "Built-in"
+  },
+  audioArmed: false,
+  lastDarkPoolAlarmDistance: null,
+  darkPoolState: {
+    previousValue: null,
+    previousFormationTime: null,
+    priceCrossed: false
+  }
 };
 
 const elements = {};
@@ -298,6 +475,289 @@ function describeMonitorTarget() {
 
   return `Pinned source: ${label}. Monitoring stays on that tab even when this panel is closed.`;
 }
+
+function normalizeHpAudioMuteScopes(rawScopes) {
+  const allowed = new Set(HP_ALARM_SCOPE_CONFIG.map((scope) => scope.id));
+  if (!Array.isArray(rawScopes)) {
+    return new Set();
+  }
+
+  return new Set(rawScopes.filter((scope) => allowed.has(scope)));
+}
+
+function sanitizeRepeatSeconds(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return DEFAULT_HP_AUDIO_SETTINGS.repeatSeconds;
+  }
+
+  return Math.min(30, Math.max(0, numeric));
+}
+
+function updateHpTrackSourceLabels() {
+  if (elements.redSongSourceText) {
+    elements.redSongSourceText.textContent = state.hpTrackSourceLabels.terminalRed;
+  }
+
+  if (elements.greenSongSourceText) {
+    elements.greenSongSourceText.textContent = state.hpTrackSourceLabels.pretiumAvaritiae;
+  }
+}
+
+function applyHpAudioRepeatSetting() {
+  if (!window.audioAlarmNotifier?.setTrackReplayCooldownMs) {
+    return;
+  }
+
+  window.audioAlarmNotifier.setTrackReplayCooldownMs(state.hpAudioRepeatSeconds * 1000);
+}
+
+function updateHpAudioMuteButtonLabel() {
+  if (!elements.hpAudioMuteButton) {
+    return;
+  }
+
+  const mutedCount = state.hpAudioMuteScopes.size;
+  elements.hpAudioMuteButton.textContent = mutedCount ? `Audio Settings (${mutedCount} muted)` : "Audio Settings";
+}
+
+async function loadHpAudioMuteSettings() {
+  if (typeof chrome === "undefined" || !chrome.storage?.local) {
+    applyHpAudioRepeatSetting();
+    updateHpTrackSourceLabels();
+    updateHpAudioMuteButtonLabel();
+    return;
+  }
+
+  const data = await chrome.storage.local.get([
+    HP_AUDIO_MUTE_STORAGE_KEY,
+    HP_AUDIO_SETTINGS_STORAGE_KEY
+  ]);
+
+  const settings = data[HP_AUDIO_SETTINGS_STORAGE_KEY] || {};
+  state.hpAudioMuteScopes = normalizeHpAudioMuteScopes(data[HP_AUDIO_MUTE_STORAGE_KEY]);
+  state.hpAudioRepeatSeconds = sanitizeRepeatSeconds(settings.repeatSeconds);
+  applyHpAudioRepeatSetting();
+  updateHpTrackSourceLabels();
+  updateHpAudioMuteButtonLabel();
+}
+
+async function saveHpAudioMuteSettings() {
+  const scopes = [...state.hpAudioMuteScopes];
+  const settings = {
+    repeatSeconds: state.hpAudioRepeatSeconds
+  };
+
+  if (typeof chrome === "undefined" || !chrome.storage?.local) {
+    applyHpAudioRepeatSetting();
+    updateHpAudioMuteButtonLabel();
+    return;
+  }
+
+  await chrome.storage.local.set({
+    [HP_AUDIO_MUTE_STORAGE_KEY]: scopes,
+    [HP_AUDIO_SETTINGS_STORAGE_KEY]: settings
+  });
+  applyHpAudioRepeatSetting();
+  updateHpAudioMuteButtonLabel();
+}
+
+function openHpAudioMuteModal() {
+  if (!elements.hpAudioMuteModal) {
+    return;
+  }
+
+  elements.muteHpAllCheckbox.checked = state.hpAudioMuteScopes.has("all");
+  elements.muteHp7Checkbox.checked = state.hpAudioMuteScopes.has("7");
+  elements.muteHp0Checkbox.checked = state.hpAudioMuteScopes.has("0");
+  elements.hpAudioRepeatSecondsInput.value = String(state.hpAudioRepeatSeconds);
+  updateHpTrackSourceLabels();
+  elements.hpAudioMuteModal.classList.add("open");
+  elements.hpAudioMuteModal.setAttribute("aria-hidden", "false");
+}
+
+function closeHpAudioMuteModal() {
+  if (!elements.hpAudioMuteModal) {
+    return;
+  }
+
+  elements.hpAudioMuteModal.classList.remove("open");
+  elements.hpAudioMuteModal.setAttribute("aria-hidden", "true");
+}
+
+function setHpTrackToBuiltIn(trackName) {
+  if (!window.audioAlarmNotifier?.resetTrackSource) {
+    return;
+  }
+
+  window.audioAlarmNotifier.resetTrackSource(trackName);
+  state.hpTrackSourceLabels[trackName] = "Built-in";
+  updateHpTrackSourceLabels();
+}
+
+function handleHpTrackFileSelection(trackName, file) {
+  if (!file || !window.audioAlarmNotifier?.setTrackSource) {
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  window.audioAlarmNotifier.setTrackSource(trackName, objectUrl, { objectUrl: true });
+  state.hpTrackSourceLabels[trackName] = `${file.name} (local)`;
+  updateHpTrackSourceLabels();
+}
+
+// ── Indicator tile dashboard ──────────────────────────────────────────────────
+
+function renderIndicatorTiles() {
+  const grid = document.getElementById("indicatorTileGrid");
+  if (!grid) return;
+
+  DASHBOARD_METRICS.forEach((metric) => {
+    const { key, label, isSpecial } = metric;
+    let tile = grid.querySelector(`.indicator-tile[data-metric="${key}"]`);
+
+    if (!tile) {
+      tile = document.createElement("article");
+      tile.className = "indicator-tile";
+      if (isSpecial && key === "darkPool") {
+        tile.classList.add("darkpool-tile");
+      }
+      tile.dataset.metric = key;
+      tile.innerHTML = `
+        <div class="tile-label">${label}</div>
+        ${isSpecial && key === "darkPool" ? `
+          <div class="tile-value" id="darkPoolValueDisplay">--</div>
+          <div class="tile-status"><span class="crossed-indicator" id="darkPoolCrossedIndicator"></span><span id="darkPoolCrossedText">--</span></div>
+        ` : `
+          <div class="tile-caption">Show chart</div>
+        `}
+      `;
+      // All tiles (including darkPool) are now clickable for chart selection
+      tile.addEventListener("click", () => toggleChartSelection(key));
+      grid.appendChild(tile);
+    }
+
+    // Update selected state for all metrics
+    const selected = state.selectedCharts.has(key);
+    tile.classList.toggle("selected", selected);
+    const caption = tile.querySelector(".tile-caption");
+    if (caption) {
+      caption.textContent = selected ? "Chart selected" : "Show chart";
+    }
+  });
+  renderDarkPoolTile();
+}
+
+function createChartPanel(metric) {
+  const section = document.getElementById("charts-section");
+  if (!section || document.getElementById(`chart-panel-${metric}`)) return;
+
+  let label = "Unknown";
+  if (metric === "price") {
+    label = "Price";
+  } else if (metric === "darkPool") {
+    label = "Dark Pool";
+  } else if (SERIES_META[metric]) {
+    label = SERIES_META[metric].label;
+  }
+
+  const panel = document.createElement("section");
+  panel.className = "panel chart-panel";
+  panel.id = `chart-panel-${metric}`;
+  panel.style.opacity = "0";
+  panel.style.transition = "opacity 0.25s ease";
+  
+  if (metric === "darkPool") {
+    // Dark pool has special layout: chart on left, status circle on right
+    panel.innerHTML = `
+      <div class="chart-header">
+        <div><h2 class="section-title">${label}</h2></div>
+        <button class="chart-card-close" data-metric="${metric}" title="Remove chart">&#x2715;</button>
+      </div>
+      <div class="chart-frame dark-pool-frame">
+        <div class="dark-pool-chart-container">
+          <svg class="chart-svg" id="chart-svg-${metric}" viewBox="0 0 320 190" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="dark-pool-indicator-container">
+          <div id="darkPoolChartIndicator" class="dark-pool-circle"></div>
+        </div>
+      </div>
+    `;
+    elements.darkPoolChart = document.getElementById(`chart-svg-${metric}`);
+  } else {
+    panel.innerHTML = `
+      <div class="chart-header">
+        <div><h2 class="section-title">${label}</h2></div>
+        <button class="chart-card-close" data-metric="${metric}" title="Remove chart">&#x2715;</button>
+      </div>
+      <div class="chart-frame">
+        <svg class="chart-svg" id="chart-svg-${metric}" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
+      </div>
+    `;
+    
+    // Store SVG ref
+    if (metric === "price") {
+      elements.priceChart = document.getElementById(`chart-svg-${metric}`);
+    } else {
+      elements.metricCharts[metric] = document.getElementById(`chart-svg-${metric}`);
+    }
+  }
+  
+  section.appendChild(panel);
+
+  // Wire close button
+  panel.querySelector(".chart-card-close").addEventListener("click", (e) => {
+    deselectChart(e.currentTarget.dataset.metric);
+  });
+
+  // Animate in then render
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { panel.style.opacity = "1"; });
+  });
+
+  if (metric === "darkPool") {
+    renderDarkPoolChart();
+  } else if (metric === "price") {
+    renderPriceChart();
+  } else {
+    renderMetricBarChart(metric);
+  }
+}
+
+function removeChartPanel(metric) {
+  const panel = document.getElementById(`chart-panel-${metric}`);
+  if (panel) {
+    panel.style.opacity = "0";
+    setTimeout(() => { if (panel.parentNode) panel.parentNode.removeChild(panel); }, 280);
+  }
+  if (metric === "price") {
+    elements.priceChart = null;
+  } else if (metric === "darkPool") {
+    elements.darkPoolChart = null;
+  } else {
+    delete elements.metricCharts[metric];
+  }
+}
+
+function toggleChartSelection(metric) {
+  if (state.selectedCharts.has(metric)) {
+    deselectChart(metric);
+  } else {
+    state.selectedCharts.add(metric);
+    createChartPanel(metric);
+    const tile = document.querySelector(`.indicator-tile[data-metric="${metric}"]`);
+    if (tile) tile.classList.add("selected");
+  }
+}
+
+function deselectChart(metric) {
+  state.selectedCharts.delete(metric);
+  removeChartPanel(metric);
+  const tile = document.querySelector(`.indicator-tile[data-metric="${metric}"]`);
+  if (tile) tile.classList.remove("selected");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getReferenceTime() {
   return state.snapshot ? new Date(state.snapshot.timestamp) : new Date();
@@ -542,6 +1002,22 @@ function updateMetricHistory(snapshot) {
 
   updatePriceHistory(snapshot, timestamp);
 
+  // Track dark pool volume changes
+  const darkPoolValue = parseCompactNumber(snapshot.numericValues?.darkPool);
+  if (darkPoolValue != null) {
+    const series = state.darkPoolMinuteSeries;
+    const previousEntry = Array.from(series.values()).pop();
+    const changeValue = previousEntry && Number.isFinite(previousEntry.value) ? darkPoolValue - previousEntry.value : 0;
+    
+    series.set(minuteBucket, {
+      timestamp: minuteBucket,
+      value: darkPoolValue,
+      change: changeValue
+    });
+    
+    pruneMap(series, minuteBucket, MAX_MINUTE_HISTORY_MS);
+  }
+
   const sf3Value = parseCompactNumber(snapshot.numericValues?.sf3);
   if (sf3Value != null) {
     const fiveMinuteBucket = floorToFiveMinutes(timestamp).getTime();
@@ -572,16 +1048,14 @@ function applyPersistedHistory(history) {
     hydrateTimestampMap(state.minuteSeries[key], minuteSeries[key]);
   }
 
-  state.lastMetricValues = {
-    sf3: history?.lastMetricValues?.sf3 ?? null,
-    nof: history?.lastMetricValues?.nof ?? null,
-    momoFlow: history?.lastMetricValues?.momoFlow ?? null
-  };
+  state.lastMetricValues = buildMetricStateObject((key) => history?.lastMetricValues?.[key] ?? null);
+  state.fiveMinuteMetricBases = buildMetricStateObject((key) => {
+    if (!FIVE_MINUTE_RESET_METRICS.has(key)) {
+      return undefined;
+    }
 
-  state.fiveMinuteMetricBases = {
-    sf3: history?.fiveMinuteMetricBases?.sf3 || null,
-    momoFlow: history?.fiveMinuteMetricBases?.momoFlow || null
-  };
+    return history?.fiveMinuteMetricBases?.[key] || null;
+  });
 
   hydrateTimestampMap(state.priceMinuteChanges, history?.priceMinuteChanges);
   hydrateTimestampMap(state.sf3FiveMinuteBuckets, history?.sf3FiveMinuteBuckets);
@@ -637,7 +1111,65 @@ function evaluateAlerts(snapshot, isInitial) {
   state.alertState.dailyBand = dailyBand;
 }
 
+function evaluateHpPriceAudio(previousSnapshot, currentSnapshot, isInitial) {
+  if (isInitial || !state.audioArmed || !window.audioAlarmNotifier?.playTrack || !previousSnapshot || !currentSnapshot) {
+    return;
+  }
+
+  const previousPrice = previousSnapshot.numericValues?.price;
+  const currentPrice = currentSnapshot.numericValues?.price;
+  if (![previousPrice, currentPrice].every(Number.isFinite)) {
+    return;
+  }
+
+  let shouldPlayTerminalRed = false;
+  let shouldPlayPretium = false;
+
+  for (const scopeConfig of HP_ALARM_SCOPE_CONFIG) {
+    if (state.hpAudioMuteScopes.has(scopeConfig.id)) {
+      continue;
+    }
+
+    const previousCallHp = previousSnapshot.numericValues?.[scopeConfig.callKey];
+    const previousPutHp = previousSnapshot.numericValues?.[scopeConfig.putKey];
+    const currentCallHp = currentSnapshot.numericValues?.[scopeConfig.callKey];
+    const currentPutHp = currentSnapshot.numericValues?.[scopeConfig.putKey];
+
+    if (![previousCallHp, previousPutHp, currentCallHp, currentPutHp].every(Number.isFinite)) {
+      continue;
+    }
+
+    const callDelta = currentCallHp - previousCallHp;
+    const putDelta = currentPutHp - previousPutHp;
+    const isCallAbovePrice = currentCallHp > currentPrice;
+    const isPriceAbovePut = currentPrice > currentPutHp;
+
+    shouldPlayTerminalRed = shouldPlayTerminalRed ||
+      (isCallAbovePrice && callDelta < 0) ||
+      (isPriceAbovePut && putDelta < 0);
+
+    shouldPlayPretium = shouldPlayPretium ||
+      (isCallAbovePrice && callDelta > 0) ||
+      (isPriceAbovePut && putDelta > 0);
+  }
+
+  // Priority: Terminal Red when structure weakens against price, else Pretium Avaritiae.
+
+  if (shouldPlayTerminalRed) {
+    void window.audioAlarmNotifier.playTrack("terminalRed");
+    return;
+  }
+
+  if (shouldPlayPretium) {
+    void window.audioAlarmNotifier.playTrack("pretiumAvaritiae");
+  }
+}
+
 function renderStatus() {
+  if (!elements.monitorTargetText || !elements.statusBadge || !elements.lastUpdatedText) {
+    return;
+  }
+
   elements.monitorTargetText.textContent = describeMonitorTarget();
 
   if (!state.snapshot || state.monitorTarget?.status && state.monitorTarget.status !== "active") {
@@ -650,6 +1182,70 @@ function renderStatus() {
   elements.statusBadge.className = "badge live";
   elements.statusBadge.textContent = "Receiving live data";
   elements.lastUpdatedText.textContent = `Last update: ${formatTimestamp(state.snapshot.timestamp)}`;
+}
+
+function renderDarkPoolTile() {
+  const darkPool = state.snapshot?.numericValues?.darkPool;
+  const price = state.snapshot?.numericValues?.price;
+
+  // Update dark pool state tracking
+  if (Number.isFinite(darkPool)) {
+    const hasMoved = state.darkPoolState.previousValue !== null && Math.abs(darkPool - state.darkPoolState.previousValue) > 0.01;
+    const hasVolumeIncrease = state.darkPoolState.previousValue !== null && Math.abs(darkPool) > Math.abs(state.darkPoolState.previousValue) * 1.25;
+
+    if (hasMoved || hasVolumeIncrease) {
+      // DP moved or volume increased >25%, reset crossed state
+      state.darkPoolState.priceCrossed = false;
+      state.darkPoolState.previousFormationTime = Date.now();
+    }
+
+    state.darkPoolState.previousValue = darkPool;
+  }
+
+  // Update price crossed state
+  if (Number.isFinite(darkPool) && Number.isFinite(price)) {
+    const priceIsAboveDP = price > darkPool;
+    if (state.darkPoolState.previousValue !== null) {
+      const dpIsAbove = darkPool > price;
+      if (dpIsAbove !== (state.darkPoolState.previousValue > price)) {
+        state.darkPoolState.priceCrossed = true;
+      }
+    }
+  }
+
+  // Render tile display
+  const valueDisplay = document.getElementById("darkPoolValueDisplay");
+  const crossedIndicator = document.getElementById("darkPoolCrossedIndicator");
+  const crossedText = document.getElementById("darkPoolCrossedText");
+
+  if (valueDisplay) {
+    valueDisplay.textContent = Number.isFinite(darkPool) ? formatPrice(darkPool) : "--";
+  }
+
+  if (crossedIndicator && crossedText) {
+    if (Number.isFinite(darkPool) && Number.isFinite(price)) {
+      crossedIndicator.classList.toggle("crossed", state.darkPoolState.priceCrossed);
+      crossedText.textContent = state.darkPoolState.priceCrossed ? "Crossed" : "Not crossed";
+    } else {
+      crossedIndicator.className = "crossed-indicator";
+      crossedText.textContent = "--";
+    }
+  }
+
+  // Trigger alarm if distance >= $1.00 and armed
+  if (Number.isFinite(darkPool) && Number.isFinite(price)) {
+    const distance = Math.abs(darkPool - price);
+    if (distance >= 1.0 && state.audioArmed && window.audioAlarmNotifier?.playTrack) {
+      // Track last alarm distance to avoid spam (only fire on new significant crossings)
+      if (!state.lastDarkPoolAlarmDistance || distance >= state.lastDarkPoolAlarmDistance + 0.5 || distance <= state.lastDarkPoolAlarmDistance - 0.5) {
+        state.lastDarkPoolAlarmDistance = distance;
+        void window.audioAlarmNotifier.playTrack("darkpool");
+      }
+    } else if (distance < 1.0) {
+      // Reset alarm state when distance drops below threshold
+      state.lastDarkPoolAlarmDistance = null;
+    }
+  }
 }
 
 function describeThresholdState(stateName, thresholds) {
@@ -665,77 +1261,11 @@ function describeThresholdState(stateName, thresholds) {
 }
 
 function renderCurrentMetrics() {
-  const snapshot = state.snapshot;
-  const sf3Status = snapshot ? getThresholdCrossState(snapshot.numericValues?.sf3, snapshot.thresholds?.sf3) : "inside";
-  const nofStatus = snapshot ? getThresholdCrossState(snapshot.numericValues?.nof, snapshot.thresholds?.nof) : "inside";
-  const momoStatus = snapshot ? getThresholdCrossState(snapshot.numericValues?.momoFlow, snapshot.thresholds?.mf) : "inside";
-
-  const cards = [
-    {
-      key: "sf3",
-      title: "SF3",
-      value: snapshot?.values?.sf3 || "--",
-      detail: ""
-    },
-    {
-      key: "nof",
-      title: "NOFA",
-      value: snapshot?.values?.nof || "--",
-      detail: ""
-    },
-    {
-      key: "momoFlow",
-      title: "MomoFlow",
-      value: snapshot?.values?.momoFlow || "--",
-      detail: ""
-    },
-    {
-      key: "sf3",
-      title: "Live Price",
-      isPriceCard: true,
-      value: snapshot?.values?.price || formatPrice(snapshot?.numericValues?.price),
-      detail: ""
-    }
-  ];
-
-  elements.currentMetricsGrid.innerHTML = cards.map((card) => `
-    <article class="metric-card ${card.isPriceCard ? "" : SERIES_META[card.key].cardClass}">
-      <h2>${card.title}</h2>
-      <div class="metric-value"${card.isPriceCard ? ' style="color:#8be9fd;"' : ""}>${card.value}</div>
-      <div class="metric-detail">${card.detail}</div>
-    </article>
-  `).join("");
+  // Superseded by renderIndicatorTiles(). Kept as no-op to avoid breakage if called externally.
 }
 
 function renderRollingMetrics() {
-  const hourlySum = computeRollingSf3Sum("hour");
-  const dailySum = computeRollingSf3Sum("day");
-  const hourlyBand = getHistoricalBand(hourlySum, HISTORICAL_SF3_THRESHOLDS.hourly);
-  const dailyBand = getHistoricalBand(dailySum, HISTORICAL_SF3_THRESHOLDS.daily);
-
-  const cards = [
-    {
-      title: "Hourly Rolling SF3",
-      value: formatCompactNumber(hourlySum),
-      detail: hourlyBand || "Inside hourly bands",
-      thresholds: `10% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.top10)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.bottom10)} | 5% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.top5)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.bottom5)} | 1% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.top1)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.hourly.bottom1)}`
-    },
-    {
-      title: "Daily Rolling SF3",
-      value: formatCompactNumber(dailySum),
-      detail: dailyBand || "Inside daily bands",
-      thresholds: `10% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.top10)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.bottom10)} | 5% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.top5)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.bottom5)} | 1% ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.top1)} / ${formatCompactNumber(HISTORICAL_SF3_THRESHOLDS.daily.bottom1)}`
-    }
-  ];
-
-  elements.rollingMetricsGrid.innerHTML = cards.map((card) => `
-    <article class="metric-card">
-      <h2>${card.title}</h2>
-      <div class="metric-value" style="font-size: 22px; color: #dce8ff;">${card.value}</div>
-      <div class="metric-detail">${card.detail}</div>
-      <div class="metric-detail" style="margin-top: 10px; color:#8ea3c5;">${card.thresholds}</div>
-    </article>
-  `).join("");
+  // Compact mode: rolling live-number summary cards are intentionally hidden.
 }
 
 function renderAlarmDisplay() {
@@ -918,12 +1448,19 @@ function buildChartScales(minValue, maxValue, options = {}) {
   const safeMax = Math.max(maxValue, 0);
   let adjustedMin = safeMin;
   let adjustedMax = safeMax;
+  let tickStep = null;
 
   if (metric && WICKY_STYLE_SCALE_METRICS.has(metric)) {
     adjustedMin = Math.min(safeMin, -WICKY_METRIC_SCALE_STEP);
     adjustedMax = Math.max(safeMax, WICKY_METRIC_SCALE_STEP);
     adjustedMin = snapMetricBoundary(adjustedMin, "min", WICKY_METRIC_SCALE_STEP);
     adjustedMax = snapMetricBoundary(adjustedMax, "max", WICKY_METRIC_SCALE_STEP);
+  }
+
+  if (metric && Number.isFinite(METRIC_SCALE_STEP_OVERRIDES[metric])) {
+    tickStep = METRIC_SCALE_STEP_OVERRIDES[metric];
+    adjustedMin = snapMetricBoundary(adjustedMin, "min", tickStep);
+    adjustedMax = snapMetricBoundary(adjustedMax, "max", tickStep);
   }
 
   if (adjustedMin === adjustedMax) {
@@ -941,6 +1478,7 @@ function buildChartScales(minValue, maxValue, options = {}) {
     margin,
     plotWidth,
     plotHeight,
+    tickStep,
     minValue: adjustedMin,
     maxValue: adjustedMax,
     xScale(index) {
@@ -953,23 +1491,39 @@ function buildChartScales(minValue, maxValue, options = {}) {
 }
 
 function buildGridMarkup(scales, formatter) {
-  const { width, height, margin, plotHeight, minValue, maxValue, yScale } = scales;
+  const { width, height, margin, plotHeight, minValue, maxValue, yScale, tickStep } = scales;
   const lines = [];
   const zeroTolerance = Math.max(Math.abs(maxValue - minValue) * 0.001, 1e-9);
   let hasZeroTick = false;
 
-  for (let index = 0; index <= 4; index += 1) {
-    const ratio = index / 4;
-    const value = maxValue - (maxValue - minValue) * ratio;
-    const y = margin.top + plotHeight * ratio;
-    if (Math.abs(value) <= zeroTolerance) {
-      hasZeroTick = true;
-    }
+  if (Number.isFinite(tickStep) && tickStep > 0) {
+    const maxLines = 25;
+    let lineCount = 0;
+    for (let value = maxValue; value >= minValue && lineCount < maxLines; value -= tickStep, lineCount += 1) {
+      const y = yScale(value);
+      if (Math.abs(value) <= zeroTolerance) {
+        hasZeroTick = true;
+      }
 
-    lines.push(`
+      lines.push(`
       <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="rgba(142,163,197,0.14)" stroke-width="1"></line>
       <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" fill="#8ea3c5" font-size="11">${formatter(value)}</text>
     `);
+    }
+  } else {
+    for (let index = 0; index <= 4; index += 1) {
+      const ratio = index / 4;
+      const value = maxValue - (maxValue - minValue) * ratio;
+      const y = margin.top + plotHeight * ratio;
+      if (Math.abs(value) <= zeroTolerance) {
+        hasZeroTick = true;
+      }
+
+      lines.push(`
+      <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="rgba(142,163,197,0.14)" stroke-width="1"></line>
+      <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" fill="#8ea3c5" font-size="11">${formatter(value)}</text>
+    `);
+    }
   }
 
   if (minValue <= 0 && maxValue >= 0 && !hasZeroTick) {
@@ -1003,8 +1557,129 @@ function renderEmptyChart(svg, message) {
   `;
 }
 
+function renderDarkPoolChart() {
+  if (!elements.darkPoolChart) {
+    return;
+  }
+
+  const series = state.darkPoolMinuteSeries;
+  const windowPoints = getVisibleMinuteWindow();
+  
+  // Map window points to dark pool entries
+  const dataPoints = windowPoints.map((time) => {
+    const bucket = floorToMinute(time).getTime();
+    const entry = series.get(bucket);
+    return {
+      time,
+      value: entry?.value ?? null,
+      change: entry?.change ?? null
+    };
+  });
+
+  const changes = dataPoints
+    .map((point) => point.change)
+    .filter((value) => value != null && Number.isFinite(value));
+
+  if (!changes.length) {
+    const meta = SERIES_META.darkPool;
+    renderEmptyChart(elements.darkPoolChart, meta.emptyMessage);
+    updateDarkPoolIndicator();
+    return;
+  }
+
+  // Get chart dimensions for left half (320 viewBox width)
+  const chartWidth = 320;
+  const chartHeight = 190;
+  const margin = { top: 14, right: 8, bottom: 34, left: 50 };
+  const plotWidth = chartWidth - margin.left - margin.right;
+  const plotHeight = chartHeight - margin.top - margin.bottom;
+
+  const minChange = Math.min(...changes, 0);
+  const maxChange = Math.max(...changes, 0);
+  const changeRange = maxChange - minChange || 1;
+  const yPadding = changeRange * 0.1;
+  const yMin = minChange - yPadding;
+  const yMax = maxChange + yPadding;
+
+  const yScale = (value) => {
+    if (!Number.isFinite(value)) return plotHeight;
+    const normalized = (value - yMin) / (yMax - yMin);
+    return margin.top + plotHeight - (normalized * plotHeight);
+  };
+
+  const xScale = (index) => margin.left + (index / (windowPoints.length - 1)) * plotWidth;
+
+  // Build bar markup for changes
+  const barMarkup = dataPoints.map((point, index) => {
+    if (point.change === null || !Number.isFinite(point.change)) return '';
+    const barWidth = Math.max(2, plotWidth / (windowPoints.length * 1.5));
+    const barX = xScale(index) - barWidth / 2;
+    const baselineY = yScale(0);
+    const height = Math.abs(baselineY - yScale(point.change));
+    const barY = Math.min(yScale(point.change), baselineY);
+    const color = point.change >= 0 ? '#8b5cf6' : '#d1d5db';
+    
+    return `<rect x="${barX}" y="${barY}" width="${barWidth}" height="${height}" fill="${color}" opacity="0.8"></rect>`;
+  }).join('');
+
+  // Build grid markup
+  const gridMarkup = [];
+  const gridLines = 4;
+  for (let i = 0; i <= gridLines; i++) {
+    const ratio = i / gridLines;
+    const value = yMin + (yMax - yMin) * ratio;
+    const y = yScale(value);
+    gridMarkup.push(`
+      <line x1="${margin.left}" y1="${y}" x2="${chartWidth - margin.right}" y2="${y}" stroke="rgba(142,163,197,0.08)" stroke-width="1"></line>
+      <text x="${margin.left - 4}" y="${y + 4}" text-anchor="end" fill="#8ea3c5" font-size="9">${formatPrice(value)}</text>
+    `);
+  }
+
+  // Build time axis
+  const timeAxisMarkup = windowPoints.map((time, index) => {
+    const x = xScale(index);
+    return `
+      <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${chartHeight - margin.bottom}" stroke="rgba(142,163,197,0.08)" stroke-width="1"></line>
+      <text x="${x}" y="${chartHeight - 12}" text-anchor="middle" fill="#8ea3c5" font-size="11">${formatMinuteLabel(time)}</text>
+    `;
+  }).join('');
+
+  elements.darkPoolChart.innerHTML = `
+    <rect x="0" y="0" width="${chartWidth}" height="${chartHeight}" fill="rgba(255,255,255,0.01)"></rect>
+    ${gridMarkup.join('')}
+    ${timeAxisMarkup}
+    ${barMarkup}
+  `;
+
+  updateDarkPoolIndicator();
+}
+
+function updateDarkPoolIndicator() {
+  const indicator = document.getElementById("darkPoolChartIndicator");
+  if (!indicator) return;
+
+  const darkPool = state.snapshot?.numericValues?.darkPool;
+  const price = state.snapshot?.numericValues?.price;
+  const priceCrossed = state.darkPoolState.priceCrossed;
+
+  indicator.className = "dark-pool-circle";
+  
+  if (!Number.isFinite(darkPool) || !Number.isFinite(price)) {
+    return;
+  }
+
+  if (priceCrossed) {
+    indicator.classList.add("dp-crossed");
+  } else if (darkPool < price) {
+    indicator.classList.add("dp-below");
+  } else {
+    indicator.classList.add("dp-above");
+  }
+}
+
 function renderMetricBarChart(metric) {
   const svg = elements.metricCharts[metric];
+  if (!svg) return;
   const meta = SERIES_META[metric];
   const points = buildSeriesPoints(metric);
   const values = points.map((point) => point.value).filter((value) => value != null && Number.isFinite(value));
@@ -1046,6 +1721,7 @@ function renderMetricBarChart(metric) {
 }
 
 function renderPriceChart() {
+  if (!elements.priceChart) return;
   const points = buildPriceChangeBars();
   const populatedPoints = points.filter((point) => point.hasData);
   const values = populatedPoints
@@ -1126,15 +1802,23 @@ function renderAlerts() {
 
 function renderCharts() {
   for (const metric of METRIC_CHART_ORDER) {
-    renderMetricBarChart(metric);
+    if (state.selectedCharts.has(metric) && elements.metricCharts[metric]) {
+      renderMetricBarChart(metric);
+    }
   }
 
-  renderPriceChart();
+  if (state.selectedCharts.has("price") && elements.priceChart) {
+    renderPriceChart();
+  }
+
+  if (state.selectedCharts.has("darkPool") && elements.darkPoolChart) {
+    renderDarkPoolChart();
+  }
 }
 
 function render() {
   renderStatus();
-  renderCurrentMetrics();
+  renderIndicatorTiles();
   renderRollingMetrics();
   renderAlarmDisplay();
   renderCharts();
@@ -1146,6 +1830,8 @@ function handleSnapshot(snapshot, options = {}) {
     return;
   }
 
+  const previousSnapshot = state.snapshot;
+
   if (snapshot.monitorTarget) {
     state.monitorTarget = snapshot.monitorTarget;
   }
@@ -1153,12 +1839,17 @@ function handleSnapshot(snapshot, options = {}) {
   state.snapshot = {
     ...snapshot,
     numericValues: {
-      sf3: parseCompactNumber(snapshot.numericValues?.sf3 ?? snapshot.values?.sf3),
-      nof: parseCompactNumber(snapshot.numericValues?.nof ?? snapshot.values?.nof),
-      momoFlow: parseCompactNumber(snapshot.numericValues?.momoFlow ?? snapshot.values?.momoFlow),
+      ...TRACKED_METRIC_KEYS.reduce((accumulator, key) => {
+        accumulator[key] = parseCompactNumber(snapshot.numericValues?.[key] ?? snapshot.values?.[key]);
+        return accumulator;
+      }, {}),
+      darkPool: parseCompactNumber(snapshot.numericValues?.darkPool ?? snapshot.values?.darkPool),
       price: parseCompactNumber(snapshot.numericValues?.price ?? snapshot.values?.price)
     }
   };
+
+  evaluateHpPriceAudio(previousSnapshot, state.snapshot, Boolean(options.initial));
+  renderDarkPoolTile();
 
   if (options.rebuildHistory) {
     updateMetricHistory(state.snapshot);
@@ -1171,16 +1862,8 @@ function handleSnapshot(snapshot, options = {}) {
 function resetMonitorData() {
   state.snapshot = null;
 
-  state.lastMetricValues = {
-    sf3: null,
-    nof: null,
-    momoFlow: null
-  };
-
-  state.fiveMinuteMetricBases = {
-    sf3: null,
-    momoFlow: null
-  };
+  state.lastMetricValues = buildMetricStateObject(() => null);
+  state.fiveMinuteMetricBases = buildMetricStateObject((key) => (FIVE_MINUTE_RESET_METRICS.has(key) ? null : undefined));
 
   for (const key of Object.keys(state.minuteSeries)) {
     state.minuteSeries[key].clear();
@@ -1214,7 +1897,7 @@ async function clearSession() {
         type: "sf3-live-monitor-reset-history"
       });
     } catch (error) {
-      console.warn("[SF3 Live Monitor] Failed to reset persisted monitor history:", error);
+      console.warn("[SF3 Goblin] Failed to reset persisted monitor history:", error);
     }
   }
 }
@@ -1282,12 +1965,24 @@ function bindEvents() {
     openAlarmModal();
   });
 
+  elements.hpAudioMuteButton.addEventListener("click", () => {
+    openHpAudioMuteModal();
+  });
+
   elements.closeAlarmModalButton.addEventListener("click", () => {
     closeAlarmModal();
   });
 
   elements.cancelAlarmButton.addEventListener("click", () => {
     closeAlarmModal();
+  });
+
+  elements.closeHpAudioMuteModalButton.addEventListener("click", () => {
+    closeHpAudioMuteModal();
+  });
+
+  elements.cancelHpAudioMuteButton.addEventListener("click", () => {
+    closeHpAudioMuteModal();
   });
 
   elements.alarmMetricSelect.addEventListener("change", () => {
@@ -1320,9 +2015,49 @@ function bindEvents() {
     }
   });
 
+  elements.hpAudioMuteModal.addEventListener("click", (event) => {
+    if (event.target === elements.hpAudioMuteModal) {
+      closeHpAudioMuteModal();
+    }
+  });
+
+  elements.hpAudioMuteForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    state.hpAudioMuteScopes = new Set();
+    if (elements.muteHpAllCheckbox.checked) state.hpAudioMuteScopes.add("all");
+    if (elements.muteHp7Checkbox.checked) state.hpAudioMuteScopes.add("7");
+    if (elements.muteHp0Checkbox.checked) state.hpAudioMuteScopes.add("0");
+    state.hpAudioRepeatSeconds = sanitizeRepeatSeconds(elements.hpAudioRepeatSecondsInput.value);
+    void saveHpAudioMuteSettings();
+    closeHpAudioMuteModal();
+  });
+
+  elements.redSongFileInput.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    handleHpTrackFileSelection("terminalRed", file);
+    event.target.value = "";
+  });
+
+  elements.greenSongFileInput.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    handleHpTrackFileSelection("pretiumAvaritiae", file);
+    event.target.value = "";
+  });
+
+  elements.resetRedSongButton.addEventListener("click", () => {
+    setHpTrackToBuiltIn("terminalRed");
+  });
+
+  elements.resetGreenSongButton.addEventListener("click", () => {
+    setHpTrackToBuiltIn("pretiumAvaritiae");
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.alarmModal.classList.contains("open")) {
       closeAlarmModal();
+    }
+    if (event.key === "Escape" && elements.hpAudioMuteModal.classList.contains("open")) {
+      closeHpAudioMuteModal();
     }
   });
 
@@ -1351,6 +2086,17 @@ function bindEvents() {
         applyPersistedHistory(changes[MONITOR_HISTORY_STORAGE_KEY].newValue);
       }
 
+      if (changes[HP_AUDIO_MUTE_STORAGE_KEY]) {
+        state.hpAudioMuteScopes = normalizeHpAudioMuteScopes(changes[HP_AUDIO_MUTE_STORAGE_KEY].newValue);
+        updateHpAudioMuteButtonLabel();
+      }
+
+      if (changes[HP_AUDIO_SETTINGS_STORAGE_KEY]) {
+        const settings = changes[HP_AUDIO_SETTINGS_STORAGE_KEY].newValue || {};
+        state.hpAudioRepeatSeconds = sanitizeRepeatSeconds(settings.repeatSeconds);
+        applyHpAudioRepeatSetting();
+      }
+
       if (changes[SNAPSHOT_STORAGE_KEY]) {
         if (changes[SNAPSHOT_STORAGE_KEY].newValue) {
           handleSnapshot(changes[SNAPSHOT_STORAGE_KEY].newValue);
@@ -1372,17 +2118,14 @@ document.addEventListener("DOMContentLoaded", () => {
   elements.statusBadge = document.getElementById("statusBadge");
   elements.monitorTargetText = document.getElementById("monitorTargetText");
   elements.lastUpdatedText = document.getElementById("lastUpdatedText");
-  elements.currentMetricsGrid = document.getElementById("currentMetricsGrid");
-  elements.rollingMetricsGrid = document.getElementById("rollingMetricsGrid");
-  elements.metricCharts = {
-    nof: document.getElementById("nofChart"),
-    momoFlow: document.getElementById("momoFlowChart"),
-    sf3: document.getElementById("sf3Chart")
-  };
-  elements.priceChart = document.getElementById("priceChart");
+  elements.currentMetricsGrid = null; // replaced by indicator tiles
+  elements.rollingMetricsGrid = null;
+  elements.metricCharts = {};
+  elements.priceChart = null;
   elements.alertsList = document.getElementById("alertsList");
   elements.popoutButton = document.getElementById("popoutButton");
   elements.armAudioButton = document.getElementById("armAudioButton");
+  elements.hpAudioMuteButton = document.getElementById("hpAudioMuteButton");
   elements.clearSessionButton = document.getElementById("clearSessionButton");
   elements.createAlarmButton = document.getElementById("createAlarmButton");
   elements.alarmDisplay = document.getElementById("alarmDisplay");
@@ -1395,8 +2138,26 @@ document.addEventListener("DOMContentLoaded", () => {
   elements.alarmThresholdInput = document.getElementById("alarmThresholdInput");
   elements.alarmThresholdHint = document.getElementById("alarmThresholdHint");
   elements.alarmAbsoluteCheckbox = document.getElementById("alarmAbsoluteCheckbox");
+  elements.hpAudioMuteModal = document.getElementById("hpAudioMuteModal");
+  elements.closeHpAudioMuteModalButton = document.getElementById("closeHpAudioMuteModalButton");
+  elements.cancelHpAudioMuteButton = document.getElementById("cancelHpAudioMuteButton");
+  elements.hpAudioMuteForm = document.getElementById("hpAudioMuteForm");
+  elements.muteHpAllCheckbox = document.getElementById("muteHpAllCheckbox");
+  elements.muteHp7Checkbox = document.getElementById("muteHp7Checkbox");
+  elements.muteHp0Checkbox = document.getElementById("muteHp0Checkbox");
+  elements.hpAudioRepeatSecondsInput = document.getElementById("hpAudioRepeatSecondsInput");
+  elements.redSongFileInput = document.getElementById("redSongFileInput");
+  elements.greenSongFileInput = document.getElementById("greenSongFileInput");
+  elements.resetRedSongButton = document.getElementById("resetRedSongButton");
+  elements.resetGreenSongButton = document.getElementById("resetGreenSongButton");
+  elements.redSongSourceText = document.getElementById("redSongSourceText");
+  elements.greenSongSourceText = document.getElementById("greenSongSourceText");
+  elements.darkPoolValueIndicator = document.getElementById("darkPoolValueIndicator");
 
   bindEvents();
   updateAlarmFormState();
+  applyHpAudioRepeatSetting();
+  updateHpTrackSourceLabels();
+  void loadHpAudioMuteSettings();
   void loadInitialSnapshot();
 });

@@ -1,8 +1,42 @@
 const SNAPSHOT_STORAGE_KEY = "sf3LiveMonitorSnapshot";
 const MONITOR_TARGET_STORAGE_KEY = "sf3LiveMonitorTarget";
 const MONITOR_HISTORY_STORAGE_KEY = "sf3LiveMonitorHistory";
+const TRACKED_METRIC_KEYS = [
+  "sf3",
+  "nof",
+  "momoFlow",
+  "gex",
+  "callHpAll",
+  "putHpAll",
+  "zeroHpAll",
+  "gravityHpAll",
+  "callHp7",
+  "putHp7",
+  "zeroHp7",
+  "gravityHp7",
+  "callHp0",
+  "putHp0",
+  "zeroHp0",
+  "gravityHp0"
+];
 const MINUTE_CHANGE_SUM_METRICS = new Set(["nof"]);
-const FIVE_MINUTE_RESET_METRICS = new Set(["sf3", "momoFlow"]);
+const FIVE_MINUTE_RESET_METRICS = new Set([
+  "sf3",
+  "momoFlow",
+  "gex",
+  "callHpAll",
+  "putHpAll",
+  "zeroHpAll",
+  "gravityHpAll",
+  "callHp7",
+  "putHp7",
+  "zeroHp7",
+  "gravityHp7",
+  "callHp0",
+  "putHp0",
+  "zeroHp0",
+  "gravityHp0"
+]);
 const MAX_MINUTE_HISTORY_MS = 60 * 60 * 1000;
 const MAX_FIVE_MINUTE_HISTORY_MS = 48 * 60 * 60 * 1000;
 
@@ -68,22 +102,18 @@ function calculatePriceChangeCents(basePrice, currentPrice) {
   return Number(((currentPrice - basePrice) * 100).toFixed(2));
 }
 
+function buildMetricObject(valueFactory) {
+  return TRACKED_METRIC_KEYS.reduce((accumulator, key) => {
+    accumulator[key] = valueFactory(key);
+    return accumulator;
+  }, {});
+}
+
 function createEmptyMonitorHistory() {
   return {
-    minuteSeries: {
-      sf3: [],
-      nof: [],
-      momoFlow: []
-    },
-    lastMetricValues: {
-      sf3: null,
-      nof: null,
-      momoFlow: null
-    },
-    fiveMinuteMetricBases: {
-      sf3: null,
-      momoFlow: null
-    },
+    minuteSeries: buildMetricObject(() => []),
+    lastMetricValues: buildMetricObject(() => null),
+    fiveMinuteMetricBases: buildMetricObject((key) => (FIVE_MINUTE_RESET_METRICS.has(key) ? null : undefined)),
     priceMinuteChanges: [],
     sf3FiveMinuteBuckets: []
   };
@@ -224,7 +254,7 @@ async function ensureContentScript(tabId) {
   } catch (error) {
     const message = String(error?.message || error || "");
     if (!message.includes("Cannot access") && !message.includes("No tab with id")) {
-      console.warn("[SF3 Live Monitor] Failed to inject content script:", message);
+      console.warn("[SF3 Goblin] Failed to inject content script:", message);
     }
   }
 }
@@ -241,26 +271,21 @@ async function requestImmediateScan(tabId) {
   } catch (error) {
     const message = String(error?.message || error || "");
     if (!message.includes("Receiving end does not exist") && !message.includes("No tab with id")) {
-      console.warn("[SF3 Live Monitor] Failed to request a scan:", message);
+      console.warn("[SF3 Goblin] Failed to request a scan:", message);
     }
   }
 }
 
 function buildNextMonitorHistory(history, snapshot) {
-  const metricMaps = {
-    sf3: hydrateTimestampMap(history.minuteSeries?.sf3),
-    nof: hydrateTimestampMap(history.minuteSeries?.nof),
-    momoFlow: hydrateTimestampMap(history.minuteSeries?.momoFlow)
-  };
-  const nextLastMetricValues = {
-    sf3: history.lastMetricValues?.sf3 ?? null,
-    nof: history.lastMetricValues?.nof ?? null,
-    momoFlow: history.lastMetricValues?.momoFlow ?? null
-  };
-  const nextFiveMinuteMetricBases = {
-    sf3: history.fiveMinuteMetricBases?.sf3 || null,
-    momoFlow: history.fiveMinuteMetricBases?.momoFlow || null
-  };
+  const metricMaps = buildMetricObject((key) => hydrateTimestampMap(history.minuteSeries?.[key]));
+  const nextLastMetricValues = buildMetricObject((key) => history.lastMetricValues?.[key] ?? null);
+  const nextFiveMinuteMetricBases = buildMetricObject((key) => {
+    if (!FIVE_MINUTE_RESET_METRICS.has(key)) {
+      return undefined;
+    }
+
+    return history.fiveMinuteMetricBases?.[key] || null;
+  });
   const priceMinuteChanges = hydrateTimestampMap(history.priceMinuteChanges);
   const sf3FiveMinuteBuckets = hydrateTimestampMap(history.sf3FiveMinuteBuckets);
 
@@ -355,11 +380,7 @@ function buildNextMonitorHistory(history, snapshot) {
   }
 
   return {
-    minuteSeries: {
-      sf3: serializeTimestampMap(metricMaps.sf3),
-      nof: serializeTimestampMap(metricMaps.nof),
-      momoFlow: serializeTimestampMap(metricMaps.momoFlow)
-    },
+    minuteSeries: buildMetricObject((key) => serializeTimestampMap(metricMaps[key])),
     lastMetricValues: nextLastMetricValues,
     fiveMinuteMetricBases: nextFiveMinuteMetricBases,
     priceMinuteChanges: serializeTimestampMap(priceMinuteChanges),
@@ -413,7 +434,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse(response);
       })
       .catch((error) => {
-        console.warn("[SF3 Live Monitor] Failed to handle snapshot publish:", String(error?.message || error || ""));
+        console.warn("[SF3 Goblin] Failed to handle snapshot publish:", String(error?.message || error || ""));
         sendResponse({ accepted: false, reason: "error" });
       });
 
@@ -426,7 +447,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse(response);
       })
       .catch((error) => {
-        console.warn("[SF3 Live Monitor] Failed to reset monitor history:", String(error?.message || error || ""));
+        console.warn("[SF3 Goblin] Failed to reset monitor history:", String(error?.message || error || ""));
         sendResponse({ ok: false });
       });
 
@@ -441,7 +462,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     try {
       await chrome.sidePanel.open({ windowId: tab.windowId });
     } catch (error) {
-      console.warn("[SF3 Live Monitor] Failed to open side panel:", String(error?.message || error || ""));
+      console.warn("[SF3 Goblin] Failed to open side panel:", String(error?.message || error || ""));
     }
   }
 

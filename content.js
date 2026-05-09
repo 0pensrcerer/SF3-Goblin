@@ -14,6 +14,24 @@
     "/html/body/div/div[1]/main/div[1]/div[2]/div[3]/div[1]/svg/text[10]",
     "/html/body/div/div[1]/main/div[1]/div[2]/div[3]/div[1]/svg/text[11]"
   ];
+  const MODAL_LABEL_TO_KEY = {
+    "MomoFlow:": "momoFlow",
+    "NOFA:": "nof",
+    "Net GEX:": "gex",
+    "Call HP All:": "callHpAll",
+    "Put HP All:": "putHpAll",
+    "Zero HP All:": "zeroHpAll",
+    "Gravity HP All:": "gravityHpAll",
+    "Call HP 7:": "callHp7",
+    "Put HP 7:": "putHp7",
+    "Zero HP 7:": "zeroHp7",
+    "Gravity HP 7:": "gravityHp7",
+    "Call HP 0:": "callHp0",
+    "Put HP 0:": "putHp0",
+    "Zero HP 0:": "zeroHp0",
+    "Gravity HP 0:": "gravityHp0"
+  };
+  const MODAL_METRIC_KEYS = Object.values(MODAL_LABEL_TO_KEY);
 
   let observer = null;
   let intervalId = null;
@@ -157,12 +175,9 @@
       const label = normalizeText(spans[0].textContent);
       const value = normalizeText(child.textContent.replace(spans[0].textContent, ""));
 
-      if (label === "MomoFlow:") {
-        result.momoFlow = value;
-      }
-
-      if (label === "NOFA:") {
-        result.nof = value;
+      const metricKey = MODAL_LABEL_TO_KEY[label];
+      if (metricKey) {
+        result[metricKey] = value;
       }
     }
 
@@ -177,6 +192,61 @@
       text,
       value: parseCompactNumber(text),
       source: text ? "banner" : ""
+    };
+  }
+
+  function formatDecimal(value) {
+    if (!Number.isFinite(value)) {
+      return "";
+    }
+
+    return value.toFixed(2).replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
+  }
+
+  function getLatestDarkPoolFromChart() {
+    const charts = window.Highcharts?.charts;
+    if (!Array.isArray(charts) || !charts.length) {
+      return { text: "", value: null, source: "" };
+    }
+
+    let latestPoint = null;
+    for (const chart of charts) {
+      for (const series of chart?.series || []) {
+        const className = normalizeText(series?.options?.className || series?.userOptions?.className || "").toLowerCase();
+        const seriesName = normalizeText(series?.name || "").toLowerCase();
+        const isDarkPool = className.includes("darkpool") || seriesName.includes("dark pool");
+        if (!isDarkPool) {
+          continue;
+        }
+
+        const points = Array.isArray(series.points) && series.points.length
+          ? series.points
+          : Array.isArray(series.data)
+            ? series.data
+            : [];
+
+        for (const point of points) {
+          const x = Number(point?.x);
+          const y = Number(point?.y);
+          if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            continue;
+          }
+
+          if (!latestPoint || x > latestPoint.x) {
+            latestPoint = { x, y };
+          }
+        }
+      }
+    }
+
+    if (!latestPoint) {
+      return { text: "", value: null, source: "" };
+    }
+
+    return {
+      text: formatDecimal(latestPoint.y),
+      value: latestPoint.y,
+      source: "chart"
     };
   }
 
@@ -251,36 +321,60 @@
     const liveTiles = getLiveTileValues();
     const modalMetrics = getModalMetrics();
     const price = getCurrentPrice();
+    const darkPool = getLatestDarkPoolFromChart();
     const thresholds = getThresholds();
 
     const values = {
       sf3: liveTiles.SF3 || "",
       nof: modalMetrics.nof || "",
+      darkPool: darkPool.text || "",
       momoFlow: modalMetrics.momoFlow || "",
+      gex: modalMetrics.gex || "",
+      callHpAll: modalMetrics.callHpAll || "",
+      putHpAll: modalMetrics.putHpAll || "",
+      zeroHpAll: modalMetrics.zeroHpAll || "",
+      gravityHpAll: modalMetrics.gravityHpAll || "",
+      callHp7: modalMetrics.callHp7 || "",
+      putHp7: modalMetrics.putHp7 || "",
+      zeroHp7: modalMetrics.zeroHp7 || "",
+      gravityHp7: modalMetrics.gravityHp7 || "",
+      callHp0: modalMetrics.callHp0 || "",
+      putHp0: modalMetrics.putHp0 || "",
+      zeroHp0: modalMetrics.zeroHp0 || "",
+      gravityHp0: modalMetrics.gravityHp0 || "",
       price: price.text || ""
     };
 
-    if (!values.sf3 && !values.nof && !values.momoFlow && price.value == null) {
+    const hasModalMetric = MODAL_METRIC_KEYS.some((key) => Boolean(values[key]));
+    if (!values.sf3 && !hasModalMetric && price.value == null) {
       return null;
+    }
+
+    const numericValues = {
+      sf3: parseCompactNumber(values.sf3),
+      darkPool: parseCompactNumber(values.darkPool),
+      price: price.value
+    };
+    for (const key of MODAL_METRIC_KEYS) {
+      numericValues[key] = parseCompactNumber(values[key]);
+    }
+
+    const sources = {
+      sf3: liveTiles.SF3 ? "tile" : "",
+      darkPool: modalMetrics.darkPool ? "modal" : darkPool.source,
+      price: price.source
+    };
+    for (const key of MODAL_METRIC_KEYS) {
+      sources[key] = modalMetrics[key] ? "modal" : "";
     }
 
     return {
       timestamp: new Date().toISOString(),
       pageUrl: window.location.href,
       values,
-      numericValues: {
-        sf3: parseCompactNumber(values.sf3),
-        nof: parseCompactNumber(values.nof),
-        momoFlow: parseCompactNumber(values.momoFlow),
-        price: price.value
-      },
+      numericValues,
       thresholds,
-      sources: {
-        sf3: liveTiles.SF3 ? "tile" : "",
-        nof: modalMetrics.nof ? "modal" : "",
-        momoFlow: modalMetrics.momoFlow ? "modal" : "",
-        price: price.source
-      }
+      sources
     };
   }
 
@@ -297,7 +391,7 @@
         return;
       }
 
-      console.warn("[SF3 Live Monitor] Failed to persist snapshot:", error);
+      console.warn("[SF3 Goblin] Failed to persist snapshot:", error);
     }
   }
 

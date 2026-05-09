@@ -1,4 +1,4 @@
-# SF3 Live Monitor
+# SF3 Goblin
 
 This extension is a separate side-panel monitor for the BigShort SF3 Segregated page.
 

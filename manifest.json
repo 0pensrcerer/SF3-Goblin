@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "SF3 Live Monitor",
+  "name": "SF3 Goblin",
   "version": "0.1.0",
   "description": "Monitors live SF3, NOF, and MomoFlow values from BigShort and supports custom alarms.",
   "action": {
-    "default_title": "Open SF3 Live Monitor",
+    "default_title": "Open SF3 Goblin",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
