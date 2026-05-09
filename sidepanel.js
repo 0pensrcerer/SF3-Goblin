@@ -683,7 +683,6 @@ function createChartPanel(metric) {
         </div>
       </div>
     `;
-    elements.darkPoolChart = document.getElementById(`chart-svg-${metric}`);
   } else {
     panel.innerHTML = `
       <div class="chart-header">
@@ -694,16 +693,18 @@ function createChartPanel(metric) {
         <svg class="chart-svg" id="chart-svg-${metric}" viewBox="0 0 640 190" preserveAspectRatio="none"></svg>
       </div>
     `;
-    
-    // Store SVG ref
-    if (metric === "price") {
-      elements.priceChart = document.getElementById(`chart-svg-${metric}`);
-    } else {
-      elements.metricCharts[metric] = document.getElementById(`chart-svg-${metric}`);
-    }
   }
   
   section.appendChild(panel);
+
+  // Store SVG ref after attaching panel to the DOM.
+  if (metric === "darkPool") {
+    elements.darkPoolChart = document.getElementById(`chart-svg-${metric}`);
+  } else if (metric === "price") {
+    elements.priceChart = document.getElementById(`chart-svg-${metric}`);
+  } else {
+    elements.metricCharts[metric] = document.getElementById(`chart-svg-${metric}`);
+  }
 
   // Wire close button
   panel.querySelector(".chart-card-close").addEventListener("click", (e) => {
